@@ -1,0 +1,17 @@
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="/dashboard"><span class="brand-mark"><i data-lucide="boxes"></i></span><span>stock<span class="brand-accent">wise</span><small>INVENTORY MANAGEMENT</small></span></a>
+  <div class="nav-label">WORKSPACE</div>
+  <nav class="side-nav">
+    <a class="nav-link <%= activePage === 'dashboard' ? 'active' : '' %>" href="/dashboard"><i data-lucide="layout-dashboard"></i><span>Overview</span></a>
+    <a class="nav-link <%= activePage === 'products' ? 'active' : '' %>" href="/products"><i data-lucide="package"></i><span>Products</span></a>
+    <a class="nav-link <%= activePage === 'categories' ? 'active' : '' %>" href="/categories"><i data-lucide="shapes"></i><span>Categories</span></a>
+    <a class="nav-link <%= activePage === 'orders' ? 'active' : '' %>" href="/orders"><i data-lucide="shopping-bag"></i><span>Orders</span></a>
+    <div class="nav-label nav-label-spaced">CONTACTS</div>
+    <a class="nav-link <%= activePage === 'customers' ? 'active' : '' %>" href="/customers"><i data-lucide="users"></i><span>Customers</span></a>
+    <a class="nav-link <%= activePage === 'suppliers' ? 'active' : '' %>" href="/suppliers"><i data-lucide="truck"></i><span>Suppliers</span></a>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="help-card"><span class="help-icon"><i data-lucide="life-buoy"></i></span><strong>Need a hand?</strong><p>Get help managing your inventory.</p><a href="#">Visit help center <i data-lucide="arrow-up-right"></i></a></div>
+    <div class="profile-mini"><div class="avatar avatar-purple">U</div><div><strong>Workspace user</strong><small>Administrator</small></div><button class="icon-button" aria-label="Profile menu"><i data-lucide="more-horizontal"></i></button></div>
+  </div>
+</aside>
