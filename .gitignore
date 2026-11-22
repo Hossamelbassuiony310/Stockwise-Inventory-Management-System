@@ -158,3 +158,34 @@ vite.config.ts.timestamp-*
 .nx/workspace-data
 .nx/migrate-runs
 plan.txt
+
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Database files and backups
+*.sql
+*.sql.gz
+*.dump
+*.db
+*.sqlite
+*.sqlite3
+
+# MySQL local data
+mysql-data/
+data/mysql/
+
+# Sequelize temporary files
+.sequelize/
+
+# IDE and editor files
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating system files
+.DS_Store
+Thumbs.db
