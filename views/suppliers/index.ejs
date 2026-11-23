@@ -1,4 +1,107 @@
-<%- include('../partials/layout-start', {pageTitle: 'Suppliers', activePage: 'suppliers'}) %>
-<div class="page-heading"><div><div class="eyebrow">CONTACTS</div><h1>Suppliers</h1><p>Manage supplier details and keep your supply chain close.</p></div><button class="btn btn-primary"><i data-lucide="plus"></i> Add supplier</button></div>
-<div class="supplier-grid"><% const supplierRows = (typeof suppliers !== 'undefined' && Array.isArray(suppliers)) ? suppliers : []; %><% if (supplierRows.length) { supplierRows.forEach(supplier => { %><article class="panel supplier-card"><div class="supplier-top"><span class="supplier-logo cat-blue"><%= (supplier.name || 'S').slice(0,2).toUpperCase() %></span><button class="icon-button"><i data-lucide="more-horizontal"></i></button></div><h3><%= supplier.name %></h3><span class="category-tag"><%= supplier.category || 'Supplier' %></span><div class="supplier-contact"><div><i data-lucide="user-round"></i><%= supplier.contactName || '—' %></div><div><i data-lucide="mail"></i><%= supplier.email || '—' %></div><div><i data-lucide="phone"></i><%= supplier.phone || '—' %></div></div><button class="btn btn-light btn-block">View supplier</button></article><% }) } else { %><div class="panel empty-state grid-empty"><span class="empty-icon"><i data-lucide="truck"></i></span><strong>No suppliers yet</strong><p>Supplier records will appear here when added.</p></div><% } %></div>
+
+<%- include('../partials/layout-start', {
+  pageTitle: 'Suppliers',
+  activePage: 'suppliers'
+}) %>
+
+<!-- Page Heading -->
+<div class="page-heading">
+
+  <div>
+    <div class="eyebrow">CONTACTS</div>
+
+    <h1>Suppliers</h1>
+
+    <p>Manage supplier details and keep your supply chain close.</p>
+  </div>
+
+  <button class="btn btn-primary">
+    <i data-lucide="plus"></i>
+    Add supplier
+  </button>
+
+</div>
+
+<!-- Suppliers Grid -->
+<div class="supplier-grid">
+
+  <% const supplierRows = (typeof suppliers !== 'undefined' && Array.isArray(suppliers))
+    ? suppliers
+    : []; %>
+
+  <% if (supplierRows.length) { %>
+
+    <% supplierRows.forEach(supplier => { %>
+
+      <!-- Supplier Card -->
+      <article class="panel supplier-card">
+
+        <!-- Supplier Header -->
+        <div class="supplier-top">
+
+          <span class="supplier-logo cat-blue">
+            <%= (supplier.name || 'S').slice(0, 2).toUpperCase() %>
+          </span>
+
+          <button class="icon-button">
+            <i data-lucide="more-horizontal"></i>
+          </button>
+
+        </div>
+
+        <!-- Supplier Information -->
+        <h3><%= supplier.name %></h3>
+
+        <span class="category-tag">
+          <%= supplier.category || 'Supplier' %>
+        </span>
+
+        <!-- Contact Information -->
+        <div class="supplier-contact">
+
+          <div>
+            <i data-lucide="user-round"></i>
+            <%= supplier.contactName || '—' %>
+          </div>
+
+          <div>
+            <i data-lucide="mail"></i>
+            <%= supplier.email || '—' %>
+          </div>
+
+          <div>
+            <i data-lucide="phone"></i>
+            <%= supplier.phone || '—' %>
+          </div>
+
+        </div>
+
+        <!-- View Supplier Button -->
+        <button class="btn btn-light btn-block">
+          View supplier
+        </button>
+
+      </article>
+
+    <% }) %>
+
+  <% } else { %>
+
+    <!-- Empty State -->
+    <div class="panel empty-state grid-empty">
+
+      <span class="empty-icon">
+        <i data-lucide="truck"></i>
+      </span>
+
+      <strong>No suppliers yet</strong>
+
+      <p>Supplier records will appear here when added.</p>
+
+    </div>
+
+  <% } %>
+
+</div>
+
 <%- include('../partials/layout-end') %>

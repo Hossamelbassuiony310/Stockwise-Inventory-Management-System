@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const categoryRoutes = require('./routes/categoryRoutes');
 
 const app = express();
 
@@ -13,6 +14,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Static Files
 app.use(express.static(path.join(__dirname, '../public')));
+
+// Routes
+app.use('/categories', categoryRoutes);
 
 // Temporary Test Route
 app.get('/', (req, res) => {
