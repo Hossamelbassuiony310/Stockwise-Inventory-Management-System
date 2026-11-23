@@ -1,0 +1,80 @@
+
+<%- include('../partials/layout-start', {
+  pageTitle: 'Supplier Details',
+  activePage: 'suppliers'
+}) %>
+
+<!-- Page Heading -->
+<div class="page-heading">
+
+  <div>
+    <div class="eyebrow">CONTACTS / SUPPLIER DETAILS</div>
+
+    <h1><%= supplier.company_name %></h1>
+
+    <p>View supplier information and contact details.</p>
+  </div>
+
+  <a href="/suppliers" class="btn btn-light">
+    <i data-lucide="arrow-left"></i>
+    Back to suppliers
+  </a>
+
+</div>
+
+<!-- Supplier Details -->
+<div class="panel" style="padding: 24px;">
+
+  <!-- Supplier Header -->
+  <div class="supplier-top">
+
+    <span class="supplier-logo cat-blue">
+      <%= (supplier.company_name || 'S').slice(0, 2).toUpperCase() %>
+    </span>
+
+    <span class="category-tag">Supplier</span>
+
+  </div>
+
+  <h2><%= supplier.company_name %></h2>
+
+  <p style="color: var(--text-muted);">
+    Supplier ID: #<%= supplier.id %>
+  </p>
+
+  <hr>
+
+  <!-- Contact Information -->
+  <h3>Contact Information</h3>
+
+  <div class="supplier-contact">
+
+    <div>
+      <i data-lucide="user-round"></i>
+      <strong>Contact name:</strong>
+      <%= supplier.contact_name || '—' %>
+    </div>
+
+    <div>
+      <i data-lucide="mail"></i>
+      <strong>Email:</strong>
+      <%= supplier.email || '—' %>
+    </div>
+
+    <div>
+      <i data-lucide="phone"></i>
+      <strong>Phone:</strong>
+      <%= supplier.phone || '—' %>
+    </div>
+
+    <div>
+      <i data-lucide="map-pin"></i>
+      <strong>Address:</strong>
+      <%= supplier.address || '—' %>
+    </div>
+
+  </div>
+
+</div>
+
+<%- include('../partials/layout-end') %>
