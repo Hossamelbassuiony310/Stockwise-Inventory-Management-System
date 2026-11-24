@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const categoryRoutes = require('./routes/categoryRoutes');
 const supplierRoutes = require('./routes/supplierRoutes');
+const productRoutes = require('./routes/productRoutes');
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 // Routes
 app.use('/categories', categoryRoutes);
 app.use('/suppliers', supplierRoutes);
+app.use('/products', productRoutes);
 
 // Temporary Test Route
 app.get('/', (req, res) => {

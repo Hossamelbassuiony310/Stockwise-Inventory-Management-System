@@ -1,0 +1,127 @@
+
+<%- include('../partials/layout-start', {
+  pageTitle: category.name + ' Products',
+  activePage: 'categories'
+}) %>
+
+<!-- Page Heading -->
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">CATALOG / CATEGORIES</div>
+    <h1><%= category.name %></h1>
+    <p><%= category.description || 'Products in this category.' %></p>
+  </div>
+
+  <a class="btn btn-light" href="/categories">
+    <i data-lucide="arrow-left"></i>
+    Back to categories
+  </a>
+</div>
+
+<!-- Category Summary -->
+<section class="panel" style="padding: 20px; margin-bottom: 20px;">
+  <strong><%= products.length %></strong>
+  <small>Products in this category</small>
+</section>
+
+<!-- Products Table -->
+<section class="panel table-panel">
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>PRODUCT</th>
+          <th>SKU</th>
+          <th>PRICE</th>
+          <th>STOCK</th>
+          <th>STATUS</th>
+          <th></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% if (products.length > 0) { %>
+
+          <% products.forEach((product) => { %>
+            <tr>
+
+              <td>
+                <div class="product-cell">
+                  <span class="product-thumb thumb-0">
+                    <% if (product.image) { %>
+                      <img
+                        src="<%= product.image %>"
+                        alt="<%= product.name %>"
+                        class="product-image"
+                      >
+                    <% } else { %>
+                      <i data-lucide="package"></i>
+                    <% } %>
+                  </span>
+
+                  <strong>
+                    <a href="/products/<%= product.id %>">
+                      <%= product.name %>
+                    </a>
+                  </strong>
+                </div>
+              </td>
+
+              <td>
+                <span class="muted-code">
+                  <%= product.sku || '—' %>
+                </span>
+              </td>
+
+              <td class="amount">
+                <%= product.selling_price %>
+              </td>
+
+              <td>
+                <strong><%= product.stock_quantity %></strong>
+              </td>
+
+              <td>
+                <span class="status">
+                  <%= product.stock_quantity === 0
+                    ? 'Out of stock'
+                    : product.stock_quantity <= product.low_stock_threshold
+                      ? 'Low stock'
+                      : 'In stock'
+                  %>
+                </span>
+              </td>
+
+              <td>
+                <a
+                  class="icon-button"
+                  href="/products/<%= product.id %>"
+                  title="View product"
+                >
+                  <i data-lucide="eye"></i>
+                </a>
+              </td>
+
+            </tr>
+          <% }) %>
+
+        <% } else { %>
+
+          <tr>
+            <td colspan="6">
+              <div class="table-empty">
+                <strong>No products found</strong>
+                <span>This category doesn't have any products yet.</span>
+              </div>
+            </td>
+          </tr>
+
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+</section>
+
+<%- include('../partials/layout-end') %>

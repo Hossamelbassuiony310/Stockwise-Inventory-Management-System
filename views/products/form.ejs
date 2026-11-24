@@ -1,9 +1,257 @@
-<%- include('../partials/layout-start', {pageTitle: (typeof product !== 'undefined' && product) ? 'Edit product' : 'Add product', activePage: 'products'}) %>
-<div class="page-heading"><div><div class="eyebrow">CATALOG / PRODUCTS</div><h1><%= (typeof product !== 'undefined' && product) ? 'Edit product' : 'Add new product' %></h1><p>Fill in the details below to add a product to your catalog.</p></div><a class="btn btn-light" href="/products"><i data-lucide="arrow-left"></i> Back to products</a></div>
-<form class="form-layout" action="#" method="post" enctype="multipart/form-data">
-  <section class="panel form-panel"><div class="form-section-title"><div><h2>Basic information</h2><p>Product name and description</p></div></div><div class="field"><label>Product name <b>*</b></label><input required name="name" placeholder="Enter product name" value="<%= (typeof product !== 'undefined' && product) ? product.name : '' %>"></div><div class="field"><label>Description</label><textarea name="description" rows="4" placeholder="Write a short product description..."><%= (typeof product !== 'undefined' && product) ? product.description : '' %></textarea></div><div class="field-row"><div class="field"><label>SKU <b>*</b></label><input required name="sku" placeholder="Enter product SKU" value="<%= (typeof product !== 'undefined' && product) ? product.sku : '' %>"></div><div class="field"><label>Category</label><select name="categoryId"><option value="">Select category</option><% if (typeof categories !== 'undefined' && Array.isArray(categories)) { categories.forEach(category => { %><option value="<%= category.id %>"><%= category.name %></option><% }) } %></select></div></div></section>
-  <section class="panel form-panel"><div class="form-section-title"><div><h2>Pricing & inventory</h2><p>Set your product price and stock quantity</p></div></div><div class="field-row"><div class="field"><label>Purchase price</label><input type="number" min="0" step=".01" name="purchasePrice" placeholder="0.00"></div><div class="field"><label>Selling price <b>*</b></label><input required type="number" min="0" step=".01" name="price" placeholder="0.00"></div></div><div class="field-row"><div class="field"><label>Quantity in stock <b>*</b></label><input required type="number" min="0" name="stock" placeholder="0"></div><div class="field"><label>Low stock threshold</label><input type="number" min="0" name="threshold" placeholder="Set threshold"></div></div><div class="field"><label>Supplier</label><select name="supplierId"><option value="">Select supplier</option><% if (typeof suppliers !== 'undefined' && Array.isArray(suppliers)) { suppliers.forEach(supplier => { %><option value="<%= supplier.id %>"><%= supplier.name %></option><% }) } %></select></div></section>
-  <section class="panel form-panel"><div class="form-section-title"><div><h2>Product image</h2><p>Upload a product image when file upload is implemented.</p></div></div><label class="upload-zone"><input type="file" name="image" accept="image/*"><span class="upload-icon"><i data-lucide="cloud-upload"></i></span><strong>Click to select an image</strong><small>Choose an image file from your device</small></label></section>
-  <div class="form-actions"><a href="/products" class="btn btn-light">Cancel</a><button type="submit" class="btn btn-primary"><i data-lucide="check"></i> Save product</button></div>
+
+<%- include('../partials/layout-start', {
+  pageTitle: (typeof product !== 'undefined' && product) ? 'Edit product' : 'Add product',
+  activePage: 'products'
+}) %>
+
+<%
+  const isEditing = typeof product !== 'undefined' && product;
+
+  const currentSupplier =
+    isEditing && product.suppliers && product.suppliers.length > 0
+      ? product.suppliers[0]
+      : null;
+
+  const purchasePrice = currentSupplier
+    ? currentSupplier.ProductSupplier.purchase_price
+    : '';
+%>
+
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">CATALOG / PRODUCTS</div>
+
+    <h1>
+      <%= isEditing ? 'Edit product' : 'Add new product' %>
+    </h1>
+
+    <p>
+      <%= isEditing
+        ? 'Update the product information below.'
+        : 'Fill in the details below to add a product to your catalog.' %>
+    </p>
+  </div>
+
+  <a class="btn btn-light" href="/products">
+    <i data-lucide="arrow-left"></i> Back to products
+  </a>
+</div>
+
+<form
+  class="form-layout"
+  action="<%= isEditing ? `/products/${product.id}/update` : '/products' %>"
+  method="post"
+>
+
+  <!-- Product Image -->
+  <section class="panel form-panel">
+    <div class="form-section-title">
+      <div>
+        <h2>Product image</h2>
+        <p>Enter a URL for the product image.</p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Image URL</label>
+
+      <input
+        type="url"
+        name="image"
+        placeholder="https://example.com/product-image.jpg"
+        value="<%= isEditing ? (product.image || '') : '' %>"
+      >
+
+      <small>Paste a direct link to the product image.</small>
+
+      <% if (isEditing && product.image) { %>
+        <div class="product-details-image">
+          <img
+            src="<%= product.image %>"
+            alt="<%= product.name %>"
+          >
+        </div>
+      <% } %>
+    </div>
+  </section>
+
+  <!-- Basic Information -->
+  <section class="panel form-panel">
+
+    <div class="form-section-title">
+      <div>
+        <h2>Product information</h2>
+        <p>Enter the basic information about your product.</p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Product name <b>*</b></label>
+
+      <input
+        required
+        name="name"
+        placeholder="Enter product name"
+        value="<%= isEditing ? product.name : '' %>"
+      >
+    </div>
+
+    <div class="field">
+      <label>Description</label>
+
+      <textarea
+        name="description"
+        rows="4"
+        placeholder="Write a short product description..."
+      ><%= isEditing ? (product.description || '') : '' %></textarea>
+    </div>
+
+    <div class="field-row">
+
+      <div class="field">
+        <label>SKU <b>*</b></label>
+
+        <input
+          required
+          name="sku"
+          placeholder="Enter product SKU"
+          value="<%= isEditing ? product.sku : '' %>"
+        >
+      </div>
+
+      <div class="field">
+        <label>Category <b>*</b></label>
+
+        <select name="category_id" required>
+          <option value="">Select category</option>
+
+          <% if (Array.isArray(categories)) {
+            categories.forEach((category) => { %>
+
+              <option
+                value="<%= category.id %>"
+                <%= isEditing && product.category_id === category.id ? 'selected' : '' %>
+              >
+                <%= category.name %>
+              </option>
+
+          <% }) } %>
+        </select>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Pricing & Inventory -->
+  <section class="panel form-panel">
+
+    <div class="form-section-title">
+      <div>
+        <h2>Pricing & inventory</h2>
+        <p>Set your product price and stock quantity.</p>
+      </div>
+    </div>
+
+    <div class="field-row">
+
+      <div class="field">
+        <label>Purchase price <b>*</b></label>
+
+        <input
+          required
+          type="number"
+          min="0"
+          step=".01"
+          name="purchasePrice"
+          placeholder="0.00"
+          value="<%= purchasePrice %>"
+        >
+      </div>
+
+      <div class="field">
+        <label>Selling price <b>*</b></label>
+
+        <input
+          required
+          type="number"
+          min="0"
+          step=".01"
+          name="selling_price"
+          placeholder="0.00"
+          value="<%= isEditing ? product.selling_price : '' %>"
+        >
+      </div>
+
+    </div>
+
+    <div class="field-row">
+
+      <div class="field">
+        <label>Quantity in stock <b>*</b></label>
+
+        <input
+          required
+          type="number"
+          min="0"
+          step="1"
+          name="stock_quantity"
+          placeholder="0"
+          value="<%= isEditing ? product.stock_quantity : '' %>"
+        >
+      </div>
+
+      <div class="field">
+        <label>Low stock threshold</label>
+
+        <input
+          type="number"
+          min="0"
+          step="1"
+          name="low_stock_threshold"
+          placeholder="Set threshold"
+          value="<%= isEditing ? product.low_stock_threshold : 5 %>"
+        >
+      </div>
+
+    </div>
+
+    <div class="field">
+      <label>Supplier <b>*</b></label>
+
+      <select name="supplierId" required>
+        <option value="">Select supplier</option>
+
+        <% if (Array.isArray(suppliers)) {
+          suppliers.forEach((supplier) => { %>
+
+            <option
+              value="<%= supplier.id %>"
+              <%= currentSupplier && Number(currentSupplier.id) === Number(supplier.id) ? 'selected' : '' %>
+            >
+              <%= supplier.company_name %>
+            </option>
+
+        <% }) } %>
+      </select>
+    </div>
+
+  </section>
+
+  <!-- Form Actions -->
+  <div class="form-actions">
+
+    <a href="/products" class="btn btn-light">
+      Cancel
+    </a>
+
+    <button type="submit" class="btn btn-primary">
+      <i data-lucide="check"></i>
+
+      <%= isEditing ? 'Update product' : 'Save product' %>
+    </button>
+
+  </div>
+
 </form>
+
 <%- include('../partials/layout-end') %>

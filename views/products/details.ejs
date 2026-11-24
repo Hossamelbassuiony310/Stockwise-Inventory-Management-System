@@ -1,0 +1,173 @@
+
+<%- include('../partials/layout-start', {
+  pageTitle: 'Product Details',
+  activePage: 'products'
+}) %>
+
+<!-- Page Heading -->
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">CATALOG / PRODUCTS / DETAILS</div>
+    <h1>Product Details</h1>
+    <p>View product information, pricing, inventory and suppliers.</p>
+  </div>
+
+  <a class="btn btn-light" href="/products">
+    <i data-lucide="arrow-left"></i> Back to products
+  </a>
+</div>
+
+<!-- Product Information -->
+<section class="panel form-panel">
+
+  <div class="form-section-title">
+    <div>
+      <h2>Basic Information</h2>
+      <p>Product name, SKU and description</p>
+    </div>
+  </div>
+
+<div class="product-details-image">
+  <% if (product.image) { %>
+    <img
+      src="<%= product.image %>"
+      alt="<%= product.name %>"
+    >
+  <% } else { %>
+    <i data-lucide="package"></i>
+  <% } %>
+</div>
+
+  <div class="field-row">
+    <div class="field">
+      <label>Product Name</label>
+      <strong><%= product.name %></strong>
+    </div>
+
+    <div class="field">
+      <label>SKU</label>
+      <strong><%= product.sku %></strong>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Description</label>
+    <p><%= product.description || 'No description available' %></p>
+  </div>
+
+  <div class="field">
+    <label>Category</label>
+    <strong>
+      <%= product.category ? product.category.name : '—' %>
+    </strong>
+  </div>
+
+</section>
+
+<!-- Pricing & Inventory -->
+<section class="panel form-panel">
+
+  <div class="form-section-title">
+    <div>
+      <h2>Pricing & Inventory</h2>
+      <p>Product price and available stock</p>
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label>Selling Price</label>
+      <strong>
+        <%= Number(product.selling_price).toFixed(2) %> EGP
+      </strong>
+    </div>
+
+    <div class="field">
+      <label>Stock Quantity</label>
+      <strong><%= product.stock_quantity %></strong>
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label>Low Stock Threshold</label>
+      <strong><%= product.low_stock_threshold %></strong>
+    </div>
+
+    <div class="field">
+      <label>Stock Status</label>
+
+      <strong>
+        <%= product.stock_quantity === 0
+          ? 'Out of stock'
+          : product.stock_quantity <= product.low_stock_threshold
+            ? 'Low stock'
+            : 'In stock'
+        %>
+      </strong>
+    </div>
+  </div>
+
+</section>
+
+<!-- Suppliers -->
+<section class="panel form-panel">
+
+  <div class="form-section-title">
+    <div>
+      <h2>Suppliers</h2>
+      <p>Suppliers associated with this product</p>
+    </div>
+  </div>
+
+  <% if (product.suppliers && product.suppliers.length > 0) { %>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>SUPPLIER</th>
+            <th>CONTACT PERSON</th>
+            <th>PURCHASE PRICE</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% product.suppliers.forEach((supplier) => { %>
+            <tr>
+              <td>
+                <strong><%= supplier.company_name %></strong>
+              </td>
+
+              <td>
+                <%= supplier.contact_name || '—' %>
+              </td>
+
+              <td class="amount">
+                <%= Number(supplier.ProductSupplier.purchase_price).toFixed(2) %> EGP
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+  <% } else { %>
+
+    <div class="table-empty">
+      <strong>No suppliers found</strong>
+      <span>No suppliers are associated with this product.</span>
+    </div>
+
+  <% } %>
+
+</section>
+
+<!-- Footer Actions -->
+<div class="form-actions">
+  <a href="/products" class="btn btn-light">
+    Back to products
+  </a>
+</div>
+
+<%- include('../partials/layout-end') %>

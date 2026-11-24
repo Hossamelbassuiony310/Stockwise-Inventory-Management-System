@@ -73,11 +73,11 @@
         <div class="category-card-bottom">
 
           <strong>
-            <%= category.productCount != null ? category.productCount : '—' %>
+            <%= category.get('productCount') %>
             <small>products</small>
           </strong>
 
-          <a href="/products">
+          <a href="/categories/<%= category.id %>/products">
             View products
             <i data-lucide="arrow-up-right"></i>
           </a>
