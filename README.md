@@ -70,13 +70,6 @@ The system will support:
 - Use a separate unique invoice number for each order.
 - Support order cancellation.
 
-### Payment Management
-
-- Support cash payments only.
-- Require full payment before completing an order.
-- Do not support partial payments.
-- Do not integrate online payment gateways in the first version.
-
 
 ### Inventory Management
 
@@ -98,12 +91,6 @@ The system will support:
 - Display sales overview for the last 7 days.
 - Display stock distribution by category.
 - Display recent orders.
-
-### Search and Filtering
-
-- Provide search and filtering capabilities on relevant pages.
-- Support searching and filtering products, customers, and orders.
-
 
 ## 4. Confirmed Business Rules
 
@@ -132,12 +119,6 @@ The system will support:
 18. Discounts can be percentage-based or fixed amounts.
 19. Discount amounts must not exceed the order subtotal.
 
-### Payment Rules
-
-20. Cash is the only supported payment method.
-21. Every order must be fully paid before it can become completed.
-22. Partial payments are not supported.
-23. Refunds are handled outside the system when an order is cancelled.
 
 ### Inventory Rules
 
@@ -152,11 +133,6 @@ The system will support:
 32. Every manual stock adjustment must be recorded in StockMovements.
 33. Insufficient stock prevents an order from becoming completed.
 
-### Invoice Rules
-
-34. Every order has a unique invoice number separate from its order number.
-35. PDF invoices are generated when an order is created.
-36. PDF invoices are generated again when an order becomes completed.
 
 
 ## 5. Database
@@ -194,7 +170,6 @@ The system will support:
 * EJS
 * MySQL
 * Sequelize
-* PDF Generation
 
 ## 7. Architecture
 
@@ -205,11 +180,6 @@ The system will support:
 The application will follow a modular and organized structure, separating database models, routes, controllers, and views.
 
 
-## 8. Project Status
-
-Currently completing Requirements Analysis and Business Rules.
-
-The database design will be finalized based on the confirmed requirements before starting implementation.
 
 ## 9. Documentation
 
