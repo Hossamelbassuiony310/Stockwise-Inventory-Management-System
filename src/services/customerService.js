@@ -1,8 +1,14 @@
-const { Customer } = require("../models");
+const { Customer, Order, OrderItem } = require("../models");
 
-// Get all customers
 const getAllCustomers = () => {
   return Customer.findAll({
+    include: [
+      {
+        model: Order,
+        as: "orders",
+        attributes: ["id", "total", "status"],
+      },
+    ],
     order: [["createdAt", "DESC"]],
   })
     .then((customers) => {
@@ -30,9 +36,22 @@ const createCustomer = (customerData) => {
     });
 };
 
-// Get customer by ID
 const getCustomerById = (customerId) => {
-  return Customer.findByPk(customerId)
+  return Customer.findByPk(customerId, {
+    include: [
+      {
+        model: Order,
+        as: "orders",
+        include: [
+          {
+            model: OrderItem,
+            as: "items",
+          },
+        ],
+      },
+    ],
+    order: [[{ model: Order, as: "orders" }, "createdAt", "DESC"]],
+  })
     .then((customer) => {
       if (!customer) {
         throw new Error("Customer not found");
@@ -77,7 +96,19 @@ const deleteCustomer = (customerId) => {
         throw new Error("Customer not found");
       }
 
-      return customer.destroy();
+      return Order.count({
+        where: {
+          customer_id: customerId,
+        },
+      }).then((ordersCount) => {
+        if (ordersCount > 0) {
+          throw new Error(
+            "Cannot delete customer because they have existing orders",
+          );
+        }
+
+        return customer.destroy();
+      });
     })
     .then(() => {
       console.log("Customer was deleted:", customerId);

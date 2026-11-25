@@ -1,6 +1,12 @@
 const sequelize = require("../config/database");
 
-const { Product, Category, Supplier, ProductSupplier } = require("../models");
+const {
+  Product,
+  Category,
+  Supplier,
+  ProductSupplier,
+  OrderItem,
+} = require("../models");
 
 // Get all products
 const getAllProducts = () => {
@@ -304,8 +310,6 @@ const updateProduct = (productId, productData) => {
     });
 };
 
-// Delete an existing product
-
 const deleteProduct = (productId) => {
   const id = Number(productId);
 
@@ -320,7 +324,20 @@ const deleteProduct = (productId) => {
           throw new Error("Product not found");
         }
 
-        return product.destroy({ transaction });
+        return OrderItem.count({
+          where: {
+            product_id: id,
+          },
+          transaction,
+        }).then((orderItemsCount) => {
+          if (orderItemsCount > 0) {
+            throw new Error(
+              "Cannot delete product because it is associated with existing orders",
+            );
+          }
+
+          return product.destroy({ transaction });
+        });
       });
     })
     .then(() => {

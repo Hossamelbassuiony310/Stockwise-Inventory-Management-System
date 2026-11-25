@@ -5,8 +5,24 @@ const getCustomers = (req, res) => {
   customerService
     .getAllCustomers()
     .then((customers) => {
+      const customersWithStats = customers.map((customer) => {
+        const orders = customer.orders || [];
+
+        const totalSpent = orders
+          .filter((order) => order.status === "completed")
+          .reduce((sum, order) => {
+            return sum + Number(order.total);
+          }, 0);
+
+        return {
+          ...customer.get({ plain: true }),
+          ordersCount: orders.length,
+          totalSpent: totalSpent,
+        };
+      });
+
       res.render("customers/index", {
-        customers: customers,
+        customers: customersWithStats,
       });
     })
     .catch((error) => {
@@ -44,6 +60,7 @@ const getCustomerDetails = (req, res) => {
     .then((customer) => {
       res.render("customers/details", {
         customer: customer,
+        orders: customer.orders,
       });
     })
     .catch((error) => {
@@ -98,6 +115,14 @@ const deleteCustomer = (req, res) => {
 
       if (error.message.includes("Customer not found")) {
         return res.status(404).send("Customer not found");
+      }
+
+      if (error.message.includes("existing orders")) {
+        return res
+          .status(400)
+          .send(
+            "Cannot delete this customer because they have existing orders.",
+          );
       }
 
       res.status(500).send("Error deleting customer");

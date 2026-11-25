@@ -1,0 +1,415 @@
+
+<%- include('../partials/layout-start', {
+  pageTitle: 'Create Order',
+  activePage: 'orders'
+}) %>
+
+<!-- Page Heading -->
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">SALES / ORDERS</div>
+    <h1>Create Order</h1>
+    <p>Create a new customer order.</p>
+  </div>
+
+  <a href="/orders" class="btn btn-light">
+    <i data-lucide="arrow-left"></i>
+    Back to orders
+  </a>
+</div>
+
+<!-- Create Order Form -->
+<form action="/orders" method="POST">
+
+  <!-- Order Information -->
+  <section class="panel" style="padding: 24px;">
+
+    <div class="panel-heading">
+      <div>
+        <h2>Order Information</h2>
+        <p>Enter the basic information for this order.</p>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+
+      <!-- Customer -->
+      <div class="field">
+        <label for="customer_id">Customer</label>
+
+        <select id="customer_id" name="customer_id">
+          <option value="">Walk-in Customer</option>
+
+          <% customers.forEach(customer => { %>
+            <option value="<%= customer.id %>">
+              <%= customer.name %>
+            </option>
+          <% }) %>
+
+        </select>
+      </div>
+
+      <!-- Discount -->
+      <div class="field">
+        <label for="discount" id="discount-label">
+          Discount Amount (EGP)
+        </label>
+
+        <input
+          type="number"
+          id="discount"
+          name="discount"
+          min="0"
+          step="0.01"
+          placeholder="Enter discount amount"
+          value="0"
+        >
+      </div>
+
+      <!-- Discount Type -->
+      <div class="field">
+        <label for="discount_type">Discount Type</label>
+
+        <select id="discount_type" name="discount_type">
+          <option value="fixed">Fixed Amount</option>
+          <option value="percentage">Percentage</option>
+        </select>
+      </div>
+
+      <!-- Status -->
+      <div class="field">
+        <label for="status">Status</label>
+
+        <select id="status" name="status">
+          <option value="pending" selected>Pending</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- Order Items -->
+  <section class="panel" style="padding: 24px; margin-top: 20px;">
+
+    <div class="panel-heading">
+      <div>
+        <h2>Order Items</h2>
+        <p>Add products and specify their quantities.</p>
+      </div>
+    </div>
+
+    <!-- Product Rows -->
+    <div id="order-items-container">
+
+      <div class="order-item-row"
+           style="border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 16px;">
+
+        <div class="detail-grid">
+
+          <!-- Product -->
+          <div class="field">
+            <label>Product</label>
+
+            <select name="items[0][product_id]" class="product-select" required>
+              <option value="">Select a product</option>
+
+              <% products.forEach(product => { %>
+                <option
+                  value="<%= product.id %>"
+                  data-price="<%= product.selling_price %>"
+                >
+                  <%= product.name %> - <%= product.sku %>
+                </option>
+              <% }) %>
+
+            </select>
+          </div>
+
+          <!-- Quantity -->
+          <div class="field">
+            <label>Quantity</label>
+
+            <input
+              type="number"
+              name="items[0][quantity]"
+              class="quantity-input"
+              min="1"
+              step="1"
+              value="1"
+              required
+            >
+          </div>
+
+          <!-- Unit Price -->
+          <div class="field">
+            <label>Unit Price</label>
+            <p class="unit-price">0.00 EGP</p>
+          </div>
+
+          <!-- Line Total -->
+          <div class="field">
+            <label>Line Total</label>
+            <strong class="line-total">0.00 EGP</strong>
+          </div>
+
+        </div>
+
+        <div style="display: flex; justify-content: flex-end;">
+          <button type="button" class="btn btn-light remove-item-btn" disabled>
+            <i data-lucide="trash-2"></i>
+            Remove
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Add Product Button -->
+    <button type="button" id="add-product-btn" class="btn btn-light">
+      <i data-lucide="plus"></i>
+      Add Another Product
+    </button>
+
+  </section>
+
+  <!-- Order Summary -->
+  <section class="panel" style="padding: 24px; margin-top: 20px;">
+
+    <div class="panel-heading">
+      <div>
+        <h2>Order Summary</h2>
+        <p>Review the order totals before creating it.</p>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+
+      <div class="field">
+        <label for="subtotal">Subtotal</label>
+
+        <input
+          type="number"
+          id="subtotal"
+          name="subtotal"
+          value="0.00"
+          readonly
+        >
+      </div>
+
+      <div class="field">
+        <label>Estimated Total</label>
+        <strong id="estimated-total">0.00 EGP</strong>
+      </div>
+
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+
+      <a href="/orders" class="btn btn-light">
+        Cancel
+      </a>
+
+      <button type="submit" class="btn btn-primary">
+        <i data-lucide="plus"></i>
+        Create Order
+      </button>
+
+    </div>
+
+  </section>
+
+  <!-- Product Row Template -->
+  <template id="order-item-template">
+    <div class="order-item-row"
+         style="border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 16px;">
+
+      <div class="detail-grid">
+
+        <div class="field">
+          <label>Product</label>
+
+          <select class="product-select" required>
+            <option value="">Select a product</option>
+
+            <% products.forEach(product => { %>
+              <option
+                value="<%= product.id %>"
+                data-price="<%= product.selling_price %>"
+              >
+                <%= product.name %> - <%= product.sku %>
+              </option>
+            <% }) %>
+
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Quantity</label>
+
+          <input
+            type="number"
+            class="quantity-input"
+            min="1"
+            step="1"
+            value="1"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label>Unit Price</label>
+          <p class="unit-price">0.00 EGP</p>
+        </div>
+
+        <div class="field">
+          <label>Line Total</label>
+          <strong class="line-total">0.00 EGP</strong>
+        </div>
+
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button type="button" class="btn btn-light remove-item-btn">
+          <i data-lucide="trash-2"></i>
+          Remove
+        </button>
+      </div>
+
+    </div>
+  </template>
+
+</form>
+
+<script>
+  const container = document.getElementById("order-items-container");
+  const addProductBtn = document.getElementById("add-product-btn");
+  const template = document.getElementById("order-item-template");
+
+  const subtotalInput = document.getElementById("subtotal");
+  const discountInput = document.getElementById("discount");
+  const discountType = document.getElementById("discount_type");
+  const discountLabel = document.getElementById("discount-label");
+  const estimatedTotal = document.getElementById("estimated-total");
+
+  // Calculate row and order totals
+  const calculateTotals = () => {
+    let subtotal = 0;
+
+    container.querySelectorAll(".order-item-row").forEach((row) => {
+      const select = row.querySelector(".product-select");
+      const quantityInput = row.querySelector(".quantity-input");
+
+      const selectedOption = select.selectedOptions[0];
+      const price = Number(selectedOption?.dataset.price || 0);
+      const quantity = Number(quantityInput.value) || 0;
+
+      const lineTotal = price * quantity;
+
+      row.querySelector(".unit-price").textContent =
+        price.toFixed(2) + " EGP";
+
+      row.querySelector(".line-total").textContent =
+        lineTotal.toFixed(2) + " EGP";
+
+      subtotal += lineTotal;
+    });
+
+    subtotalInput.value = subtotal.toFixed(2);
+
+    const discount = Number(discountInput.value) || 0;
+
+    let total = subtotal;
+
+    if (discountType.value === "percentage") {
+      total = subtotal - (subtotal * discount / 100);
+    } else {
+      total = subtotal - discount;
+    }
+
+    total = Math.max(0, total);
+
+    estimatedTotal.textContent = total.toFixed(2) + " EGP";
+  };
+
+  // Update input names
+  const updateItemIndexes = () => {
+    const rows = container.querySelectorAll(".order-item-row");
+
+    rows.forEach((row, index) => {
+      row.querySelector(".product-select").name =
+        `items[${index}][product_id]`;
+
+      row.querySelector(".quantity-input").name =
+        `items[${index}][quantity]`;
+
+      row.querySelector(".remove-item-btn").disabled =
+        rows.length === 1;
+    });
+  };
+
+  // Add new product row
+  addProductBtn.addEventListener("click", () => {
+    const newRow = template.content.cloneNode(true);
+
+    container.appendChild(newRow);
+
+    updateItemIndexes();
+    calculateTotals();
+  });
+
+  // Handle product changes and quantity changes
+  container.addEventListener("change", (event) => {
+    if (
+      event.target.classList.contains("product-select") ||
+      event.target.classList.contains("quantity-input")
+    ) {
+      calculateTotals();
+    }
+  });
+
+  container.addEventListener("input", (event) => {
+    if (event.target.classList.contains("quantity-input")) {
+      calculateTotals();
+    }
+  });
+
+  // Remove product row
+  container.addEventListener("click", (event) => {
+    const removeBtn = event.target.closest(".remove-item-btn");
+
+    if (!removeBtn) return;
+
+    removeBtn.closest(".order-item-row").remove();
+
+    updateItemIndexes();
+    calculateTotals();
+  });
+
+  // Discount type
+  discountType.addEventListener("change", () => {
+    if (discountType.value === "percentage") {
+      discountLabel.textContent = "Discount Percentage (%)";
+      discountInput.placeholder = "Enter percentage";
+      discountInput.max = "100";
+    } else {
+      discountLabel.textContent = "Discount Amount (EGP)";
+      discountInput.placeholder = "Enter discount amount";
+      discountInput.removeAttribute("max");
+    }
+
+    discountInput.value = "0";
+    calculateTotals();
+  });
+
+  discountInput.addEventListener("input", calculateTotals);
+
+  // Initial calculation
+  updateItemIndexes();
+  calculateTotals();
+</script>
+
+<%- include('../partials/layout-end') %>

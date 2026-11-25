@@ -1,0 +1,369 @@
+
+<%- include('../partials/layout-start', {
+  pageTitle: 'Edit Order',
+  activePage: 'orders'
+}) %>
+
+<!-- Page Heading -->
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">SALES / ORDERS</div>
+    <h1>Edit Order</h1>
+    <p>Update order information and manage products.</p>
+  </div>
+
+  <a href="/orders/<%= order.id %>" class="btn btn-light">
+    <i data-lucide="arrow-left"></i>
+    Back to order
+  </a>
+</div>
+
+<!-- Order Information -->
+<form action="/orders/<%= order.id %>/update" method="POST">
+
+  <section class="panel" style="padding: 24px;">
+
+    <div class="panel-heading">
+      <div>
+        <h2>Order Information</h2>
+        <p>Update the information for this order.</p>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+
+      <!-- Customer -->
+      <div class="field">
+        <label for="customer_id">Customer</label>
+
+        <select id="customer_id" name="customer_id">
+          <option value="">Walk-in Customer</option>
+
+          <% customers.forEach(customer => { %>
+            <option
+              value="<%= customer.id %>"
+              <%= Number(order.customer_id) === Number(customer.id) ? 'selected' : '' %>
+            >
+              <%= customer.name %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <!-- Subtotal -->
+      <div class="field">
+        <label for="subtotal">Subtotal</label>
+
+        <input
+          type="number"
+          id="subtotal"
+          name="subtotal"
+          value="<%= Number(order.subtotal).toFixed(2) %>"
+          readonly
+        >
+      </div>
+
+      <!-- Discount -->
+      <div class="field">
+        <label for="discount" id="discount-label">
+          <%= order.discount_type === 'percentage'
+            ? 'Discount Percentage (%)'
+            : 'Discount Amount (EGP)' %>
+        </label>
+
+        <input
+          type="number"
+          id="discount"
+          name="discount"
+          min="0"
+          step="0.01"
+          value="<%= order.discount %>"
+        >
+      </div>
+
+      <!-- Discount Type -->
+      <div class="field">
+        <label for="discount_type">Discount Type</label>
+
+        <select id="discount_type" name="discount_type">
+          <option
+            value="fixed"
+            <%= order.discount_type === 'fixed' ? 'selected' : '' %>
+          >
+            Fixed Amount
+          </option>
+
+          <option
+            value="percentage"
+            <%= order.discount_type === 'percentage' ? 'selected' : '' %>
+          >
+            Percentage
+          </option>
+        </select>
+      </div>
+
+      <!-- Status -->
+      <div class="field">
+        <label for="status">Status</label>
+
+        <select id="status" name="status">
+          <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>
+            Pending
+          </option>
+
+          <option value="completed" <%= order.status === 'completed' ? 'selected' : '' %>>
+            Completed
+          </option>
+
+          <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>
+            Cancelled
+          </option>
+        </select>
+      </div>
+
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; margin-top: 24px;">
+      <button type="submit" class="btn btn-primary">
+        <i data-lucide="save"></i>
+        Save Order Information
+      </button>
+    </div>
+
+  </section>
+
+</form>
+
+<!-- Order Items -->
+<section class="panel" style="padding: 24px; margin-top: 20px;">
+
+  <div class="panel-heading">
+    <div>
+      <h2>Order Items</h2>
+      <p>Manage products included in this order.</p>
+    </div>
+  </div>
+
+  <% if (items && items.length > 0) { %>
+
+    <div class="table-wrap">
+      <table>
+
+        <thead>
+          <tr>
+            <th>PRODUCT</th>
+            <th>SKU</th>
+            <th>UNIT PRICE</th>
+            <th>QUANTITY</th>
+            <th>LINE TOTAL</th>
+
+            <% if (order.status === 'pending') { %>
+              <th>ACTIONS</th>
+            <% } %>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <% items.forEach(item => { %>
+
+            <tr>
+
+              <td>
+                <strong><%= item.product_name %></strong>
+              </td>
+
+              <td><%= item.sku %></td>
+
+              <td>
+                <%= Number(item.unit_price).toFixed(2) %> EGP
+              </td>
+
+              <td>
+
+                <% if (order.status === 'pending') { %>
+
+                  <form
+                    action="/orders/<%= order.id %>/items/<%= item.id %>/update"
+                    method="POST"
+                    style="display: flex; gap: 6px; align-items: center;"
+                  >
+
+                    <input
+                      type="number"
+                      name="quantity"
+                      value="<%= item.quantity %>"
+                      min="1"
+                      step="1"
+                      required
+                      style="width: 75px;"
+                    >
+
+                    <button type="submit" class="btn btn-light" title="Update quantity">
+                      <i data-lucide="save"></i>
+                    </button>
+
+                  </form>
+
+                <% } else { %>
+
+                  <%= item.quantity %>
+
+                <% } %>
+
+              </td>
+
+              <td>
+                <strong>
+                  <%= Number(item.line_total).toFixed(2) %> EGP
+                </strong>
+              </td>
+
+              <% if (order.status === 'pending') { %>
+
+                <td>
+                  <form
+                    action="/orders/<%= order.id %>/items/<%= item.id %>/delete"
+                    method="POST"
+                    onsubmit="return confirm('Are you sure you want to remove this product?');"
+                  >
+                    <button type="submit" class="btn btn-light" title="Remove product">
+                      <i data-lucide="trash-2"></i>
+                    </button>
+                  </form>
+                </td>
+
+              <% } %>
+
+            </tr>
+
+          <% }) %>
+
+        </tbody>
+
+      </table>
+    </div>
+
+  <% } else { %>
+
+    <div class="table-empty">
+      <strong>No products in this order</strong>
+      <span>Add products using the form below.</span>
+    </div>
+
+  <% } %>
+
+</section>
+
+<!-- Add Products -->
+<% if (order.status === 'pending') { %>
+
+  <section class="panel" style="padding: 24px; margin-top: 20px;">
+
+    <div class="panel-heading">
+      <div>
+        <h2>Add Products</h2>
+        <p>Add another product to this order.</p>
+      </div>
+    </div>
+
+    <form
+      action="/orders/<%= order.id %>/items"
+      method="POST"
+    >
+
+      <div class="detail-grid">
+
+        <!-- Product -->
+        <div class="field">
+          <label for="product_id">Product</label>
+
+          <select id="product_id" name="product_id" required>
+            <option value="">Select a product</option>
+
+            <% products.forEach(product => { %>
+              <option
+                value="<%= product.id %>"
+                data-price="<%= product.selling_price %>"
+              >
+                <%= product.name %> - <%= product.sku %>
+                - <%= Number(product.selling_price).toFixed(2) %> EGP
+              </option>
+            <% }) %>
+
+          </select>
+        </div>
+
+        <!-- Quantity -->
+        <div class="field">
+          <label for="quantity">Quantity</label>
+
+          <input
+            type="number"
+            id="quantity"
+            name="quantity"
+            min="1"
+            step="1"
+            value="1"
+            required
+          >
+        </div>
+
+        <!-- Unit Price Preview -->
+        <div class="field">
+          <label>Unit Price</label>
+          <p id="unit-price">0.00 EGP</p>
+        </div>
+
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="plus"></i>
+          Add Product
+        </button>
+      </div>
+
+    </form>
+
+  </section>
+
+<% } %>
+
+<script>
+  // Discount fields
+  const discountType = document.getElementById("discount_type");
+  const discountInput = document.getElementById("discount");
+  const discountLabel = document.getElementById("discount-label");
+
+  const updateDiscountLabel = () => {
+    if (discountType.value === "percentage") {
+      discountLabel.textContent = "Discount Percentage (%)";
+      discountInput.placeholder = "Enter percentage";
+      discountInput.max = "100";
+    } else {
+      discountLabel.textContent = "Discount Amount (EGP)";
+      discountInput.placeholder = "Enter discount amount";
+      discountInput.removeAttribute("max");
+    }
+  };
+
+  discountType.addEventListener("change", updateDiscountLabel);
+
+  updateDiscountLabel();
+
+  // Product price preview
+  const productSelect = document.getElementById("product_id");
+  const unitPrice = document.getElementById("unit-price");
+
+  if (productSelect) {
+    productSelect.addEventListener("change", () => {
+      const selectedOption = productSelect.selectedOptions[0];
+      const price = Number(selectedOption.dataset.price || 0);
+
+      unitPrice.textContent = price.toFixed(2) + " EGP";
+    });
+  }
+</script>
+
+<%- include('../partials/layout-end') %>

@@ -6,16 +6,17 @@
 
 <!-- Page Heading -->
 <div class="page-heading">
-    <form
-        action="/customers/<%= customer.id %>/delete"
-        method="POST"
-        onsubmit="return confirm('Are you sure you want to delete this customer?');"
-        >
-        <button type="submit" class="btn btn-danger">
-            <i data-lucide="trash-2"></i>
-            Delete Customer
-        </button>
-    </form>
+  <form
+    action="/customers/<%= customer.id %>/delete"
+    method="POST"
+    onsubmit="return confirm('Are you sure you want to delete this customer?');"
+  >
+    <button type="submit" class="btn btn-danger">
+      <i data-lucide="trash-2"></i>
+      Delete Customer
+    </button>
+  </form>
+
   <div>
     <div class="eyebrow">CUSTOMER PROFILE</div>
     <h1>Customer Details</h1>
@@ -72,16 +73,178 @@
 
     <div class="field">
       <label>Created At</label>
-      <p><%= customer.createdAt ? customer.createdAt.toLocaleDateString() : '—' %></p>
+      <p>
+        <%= customer.createdAt
+          ? customer.createdAt.toLocaleDateString()
+          : '—' %>
+      </p>
     </div>
 
   </div>
+</section>
+
+<!-- Customer Orders -->
+<section class="panel" style="padding: 24px; margin-top: 20px;">
+
+  <div class="panel-header">
+    <div>
+      <h2>Customer Orders</h2>
+      <p>All orders placed by this customer.</p>
+    </div>
+
+    <span class="eyebrow">
+      <%= orders.length %> ORDERS
+    </span>
+  </div>
+
+  <% if (orders && orders.length > 0) { %>
+
+    <div class="table-wrap">
+      <table class="data-table">
+
+        <thead>
+          <tr>
+            <th>Order Number</th>
+            <th>Order Date</th>
+            <th>Subtotal</th>
+            <th>Discount</th>
+            <th>Total</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <% orders.forEach((order) => { %>
+
+            <!-- Order Information -->
+            <tr>
+              <td>
+                <a href="/orders/<%= order.id %>">
+                  <strong><%= order.order_number %></strong>
+                </a>
+              </td>
+
+              <td>
+                <%= order.createdAt
+                  ? order.createdAt.toLocaleDateString()
+                  : '—' %>
+              </td>
+
+              <td>
+                <%= Number(order.subtotal).toFixed(2) %> EGP
+              </td>
+
+              <td>
+                <%= Number(order.discount).toFixed(2) %>
+                (<%= order.discount_type %>)
+              </td>
+
+              <td>
+                <strong>
+                  <%= Number(order.total).toFixed(2) %> EGP
+                </strong>
+              </td>
+
+              <td>
+                <%= order.status %>
+              </td>
+            </tr>
+
+            <!-- Order Products -->
+            <tr>
+              <td
+                colspan="6"
+                style="padding: 16px 24px; background: var(--surface-secondary, #f8fafc);"
+              >
+
+                <strong style="display: block; margin-bottom: 12px;">
+                  Order Products
+                </strong>
+
+                <% if (order.items && order.items.length > 0) { %>
+
+                  <div class="table-wrap">
+                    <table class="data-table">
+
+                      <thead>
+                        <tr>
+                          <th>Product</th>
+                          <th>SKU</th>
+                          <th>Unit Price</th>
+                          <th>Quantity</th>
+                          <th>Line Total</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+
+                        <% order.items.forEach((item) => { %>
+
+                          <tr>
+                            <td>
+                              <strong><%= item.product_name %></strong>
+                            </td>
+
+                            <td>
+                              <%= item.sku %>
+                            </td>
+
+                            <td>
+                              <%= Number(item.unit_price).toFixed(2) %> EGP
+                            </td>
+
+                            <td>
+                              <%= item.quantity %>
+                            </td>
+
+                            <td>
+                              <strong>
+                                <%= Number(item.line_total).toFixed(2) %> EGP
+                              </strong>
+                            </td>
+                          </tr>
+
+                        <% }) %>
+
+                      </tbody>
+                    </table>
+                  </div>
+
+                <% } else { %>
+
+                  <div class="table-empty">
+                    <strong>No products found</strong>
+                    <span>This order has no products.</span>
+                  </div>
+
+                <% } %>
+
+              </td>
+            </tr>
+
+          <% }) %>
+
+        </tbody>
+      </table>
+    </div>
+
+  <% } else { %>
+
+    <div class="table-empty">
+      <strong>No orders found</strong>
+      <span>This customer has not placed any orders yet.</span>
+    </div>
+
+  <% } %>
 
 </section>
 
 <!-- Edit Customer Modal -->
 <div class="modal-backdrop" id="editCustomerModal">
+
   <div class="modal">
+
     <div class="modal-head">
       <div>
         <h2>Edit customer</h2>
@@ -94,8 +257,10 @@
     </div>
 
     <form action="/customers/<%= customer.id %>/update" method="POST">
+
       <div class="field">
         <label>Customer name</label>
+
         <input
           type="text"
           name="name"
@@ -107,6 +272,7 @@
 
       <div class="field">
         <label>Email</label>
+
         <input
           type="email"
           name="email"
@@ -117,6 +283,7 @@
 
       <div class="field">
         <label>Phone</label>
+
         <input
           type="text"
           name="phone"
@@ -127,6 +294,7 @@
 
       <div class="field">
         <label>Address</label>
+
         <textarea
           name="address"
           rows="3"
@@ -135,6 +303,7 @@
       </div>
 
       <div class="modal-actions">
+
         <button type="button" class="btn btn-light" data-close-modal>
           Cancel
         </button>
@@ -142,7 +311,9 @@
         <button type="submit" class="btn btn-primary">
           Save changes
         </button>
+
       </div>
+
     </form>
   </div>
 </div>

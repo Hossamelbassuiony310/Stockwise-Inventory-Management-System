@@ -130,7 +130,6 @@ const updateProduct = (req, res) => {
     });
 };
 
-// Delete product
 const deleteProduct = (req, res) => {
   const productId = req.params.id;
 
@@ -146,7 +145,15 @@ const deleteProduct = (req, res) => {
         return res.status(404).send("Product not found");
       }
 
-      res.status(400).send(error.message);
+      if (error.message.includes("associated with existing orders")) {
+        return res
+          .status(400)
+          .send(
+            "Cannot delete this product because it is associated with existing orders.",
+          );
+      }
+
+      res.status(500).send("An error occurred while deleting the product.");
     });
 };
 

@@ -76,11 +76,17 @@
 
               <td><%= customer.phone || '—' %></td>
 
-              <!-- Deferred until Orders implementation -->
-              <td>—</td>
+              
+              <!-- Orders Count -->
+              <td>
+                <%= customer.ordersCount || 0 %>
+              </td>
 
-              <!-- Deferred until Orders implementation -->
-              <td class="amount">—</td>
+              <!-- Total Spent -->
+              <td class="amount">
+                <%= Number(customer.totalSpent || 0).toFixed(2) %> EGP
+              </td>
+
 
               <td>
                 <a

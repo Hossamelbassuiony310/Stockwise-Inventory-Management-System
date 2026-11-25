@@ -4,6 +4,8 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const supplierRoutes = require("./routes/supplierRoutes");
 const productRoutes = require("./routes/productRoutes");
 const customerRoutes = require("./routes/customerRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const orderItemRoutes = require("./routes/orderItemRoutes");
 
 const app = express();
 
@@ -23,6 +25,8 @@ app.use("/categories", categoryRoutes);
 app.use("/suppliers", supplierRoutes);
 app.use("/products", productRoutes);
 app.use("/customers", customerRoutes);
+app.use("/orders", orderRoutes);
+app.use("/orders", orderItemRoutes);
 
 // Temporary Test Route
 app.get("/", (req, res) => {
