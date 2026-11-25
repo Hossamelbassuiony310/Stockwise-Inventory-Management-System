@@ -1,6 +1,7 @@
 const productService = require("../services/productService");
 const categoryService = require("../services/categoryService");
 const supplierService = require("../services/supplierService");
+const stockManagementService = require("../services/stockManagementService");
 
 // Get all products
 const getProducts = (req, res) => {
@@ -14,6 +15,53 @@ const getProducts = (req, res) => {
     .catch((error) => {
       console.error(error);
       res.status(500).send("Error fetching products");
+    });
+};
+
+// Get low stock products
+const getLowStockProducts = (req, res) => {
+  productService
+    .getLowStockProducts()
+    .then((products) => {
+      res.render("products/low-stock", {
+        products: products,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).send("Error fetching low stock products");
+    });
+};
+
+// Add stock to product
+const addStock = (req, res) => {
+  const productId = req.params.id;
+  const quantity = req.body.quantity;
+
+  stockManagementService
+    .addStock(productId, quantity)
+    .then(() => {
+      res.redirect(`/products/${productId}`);
+    })
+    .catch((error) => {
+      console.error("Error adding stock:", error);
+      res.status(400).send(error.message);
+    });
+};
+
+// Remove stock from product
+const removeStock = (req, res) => {
+  const productId = req.params.id;
+  const quantity = req.body.quantity;
+
+  stockManagementService
+    .removeStock(productId, quantity)
+    .then(() => {
+      res.redirect(`/products/${productId}`);
+    })
+    .catch((error) => {
+      console.error("Error removing stock:", error);
+      res.status(400).send(error.message);
     });
 };
 
@@ -45,6 +93,7 @@ const getProductDetails = (req, res) => {
     .then((product) => {
       res.render("products/details", {
         product: product,
+        stockMovements: product.stockMovements || [],
       });
     })
     .catch((error) => {
@@ -165,4 +214,7 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
+  getLowStockProducts,
+  addStock,
+  removeStock,
 };

@@ -1,4 +1,5 @@
 const sequelize = require("../config/database");
+const { Op } = require("sequelize");
 
 const {
   Product,
@@ -6,8 +7,9 @@ const {
   Supplier,
   ProductSupplier,
   OrderItem,
+  StockMovement,
+  Order,
 } = require("../models");
-
 // Get all products
 const getAllProducts = () => {
   return Product.findAll({
@@ -27,6 +29,26 @@ const getAllProducts = () => {
     });
 };
 
+// Get low stock products
+const getLowStockProducts = () => {
+  return Product.findAll({
+    where: sequelize.where(sequelize.col("stock_quantity"), {
+      [Op.lte]: sequelize.col("low_stock_threshold"),
+    }),
+    include: [
+      {
+        model: Category,
+        as: "category",
+      },
+    ],
+    order: [["stock_quantity", "ASC"]],
+  })
+    .then((products) => products)
+    .catch((error) => {
+      throw new Error("Error fetching low stock products: " + error.message);
+    });
+};
+
 // Get product by ID
 const getProductById = (productId) => {
   return Product.findByPk(productId, {
@@ -42,6 +64,20 @@ const getProductById = (productId) => {
           attributes: ["purchase_price"],
         },
       },
+      {
+        model: StockMovement,
+        as: "stockMovements",
+        include: [
+          {
+            model: Order,
+            as: "order",
+            attributes: ["id", "order_number"],
+          },
+        ],
+      },
+    ],
+    order: [
+      [{ model: StockMovement, as: "stockMovements" }, "createdAt", "DESC"],
     ],
   })
     .then((product) => {
@@ -178,7 +214,6 @@ const updateProduct = (productId, productData) => {
   const supplierId = Number(productData.supplierId);
   const sellingPrice = Number(productData.selling_price);
   const purchasePrice = Number(productData.purchasePrice);
-  const stockQuantity = Number(productData.stock_quantity);
 
   const lowStockThreshold =
     productData.low_stock_threshold === "" ||
@@ -189,10 +224,12 @@ const updateProduct = (productId, productData) => {
   const name = productData.name ? productData.name.trim() : "";
   const sku = productData.sku ? productData.sku.trim() : "";
 
+  // Validate product ID
   if (!Number.isInteger(id) || id <= 0) {
     return Promise.reject(new Error("Invalid product ID"));
   }
 
+  // Validate required fields
   if (!name || !sku) {
     return Promise.reject(new Error("Product name and SKU are required"));
   }
@@ -202,14 +239,17 @@ const updateProduct = (productId, productData) => {
       ? productData.image.trim()
       : null;
 
+  // Validate category
   if (!Number.isInteger(categoryId) || categoryId <= 0) {
     return Promise.reject(new Error("Valid category is required"));
   }
 
+  // Validate supplier
   if (!Number.isInteger(supplierId) || supplierId <= 0) {
     return Promise.reject(new Error("Valid supplier is required"));
   }
 
+  // Validate selling price
   if (
     productData.selling_price === "" ||
     !Number.isFinite(sellingPrice) ||
@@ -218,6 +258,7 @@ const updateProduct = (productId, productData) => {
     return Promise.reject(new Error("Valid selling price is required"));
   }
 
+  // Validate purchase price
   if (
     productData.purchasePrice === "" ||
     !Number.isFinite(purchasePrice) ||
@@ -226,14 +267,7 @@ const updateProduct = (productId, productData) => {
     return Promise.reject(new Error("Valid purchase price is required"));
   }
 
-  if (
-    productData.stock_quantity === "" ||
-    !Number.isInteger(stockQuantity) ||
-    stockQuantity < 0
-  ) {
-    return Promise.reject(new Error("Valid stock quantity is required"));
-  }
-
+  // Validate low stock threshold
   if (!Number.isInteger(lowStockThreshold) || lowStockThreshold < 0) {
     return Promise.reject(new Error("Invalid low stock threshold"));
   }
@@ -265,7 +299,6 @@ const updateProduct = (productId, productData) => {
               sku,
               description: productData.description || null,
               selling_price: sellingPrice,
-              stock_quantity: stockQuantity,
               low_stock_threshold: lowStockThreshold,
               image,
             },
@@ -356,4 +389,5 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
+  getLowStockProducts,
 };

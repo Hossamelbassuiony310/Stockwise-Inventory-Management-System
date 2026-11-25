@@ -1,7 +1,13 @@
 const sequelize = require("../config/database");
 const { QueryTypes } = require("sequelize");
 
-const { Order, Customer, OrderItem, Product } = require("../models");
+const {
+  Order,
+  Customer,
+  OrderItem,
+  Product,
+  StockMovement,
+} = require("../models");
 
 // Get all orders
 const getAllOrders = () => {
@@ -242,7 +248,10 @@ const updateOrder = (orderId, orderData) => {
 
   return sequelize
     .transaction((transaction) => {
-      return Order.findByPk(orderId, { transaction }).then((order) => {
+      return Order.findByPk(orderId, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      }).then((order) => {
         if (!order) {
           throw new Error("Order not found");
         }
@@ -252,10 +261,18 @@ const updateOrder = (orderId, orderData) => {
           throw new Error("Only pending orders can be updated");
         }
 
-        // Get order items to calculate subtotal
+        const newStatus = orderData.status || order.status;
+
+        // Validate order status
+        if (!["pending", "completed", "cancelled"].includes(newStatus)) {
+          throw new Error("Invalid order status");
+        }
+
+        // Get order items
         return OrderItem.findAll({
           where: { order_id: orderId },
-          attributes: ["line_total"],
+          attributes: ["product_id", "quantity", "line_total"],
+          order: [["product_id", "ASC"]],
           transaction,
         }).then((items) => {
           const subtotal = items.reduce(
@@ -280,18 +297,73 @@ const updateOrder = (orderId, orderData) => {
 
           const total = subtotal - discountAmount;
 
-          // Update order
-          return order.update(
-            {
-              customer_id: orderData.customer_id || null,
-              subtotal: subtotal.toFixed(2),
-              discount: discount,
-              discount_type: discountType,
-              total: total.toFixed(2),
-              status: orderData.status || order.status,
-            },
-            { transaction },
-          );
+          // Deduct stock when completing an order
+          let stockPromise = Promise.resolve();
+
+          if (newStatus === "completed") {
+            if (items.length === 0) {
+              throw new Error("Cannot complete an order without items");
+            }
+
+            stockPromise = items.reduce((promise, item) => {
+              return promise.then(() => {
+                const quantity = Number(item.quantity);
+
+                if (!Number.isInteger(quantity) || quantity <= 0) {
+                  throw new Error("Invalid order item quantity");
+                }
+
+                return Product.findByPk(item.product_id, {
+                  transaction,
+                  lock: transaction.LOCK.UPDATE,
+                }).then((product) => {
+                  if (!product) {
+                    throw new Error(`Product not found: ${item.product_id}`);
+                  }
+
+                  // Check available stock
+                  if (product.stock_quantity < quantity) {
+                    throw new Error(
+                      `Insufficient stock for product ${product.name}. Available: ${product.stock_quantity}, Required: ${quantity}`,
+                    );
+                  }
+
+                  const newStock = product.stock_quantity - quantity;
+
+                  // Update product stock
+                  return product
+                    .update({ stock_quantity: newStock }, { transaction })
+                    .then(() => {
+                      // Record SALE movement
+                      return StockMovement.create(
+                        {
+                          product_id: product.id,
+                          order_id: order.id,
+                          movement_type: "SALE",
+                          quantity: quantity,
+                        },
+                        { transaction },
+                      );
+                    });
+                });
+              });
+            }, Promise.resolve());
+          }
+
+          // Wait for stock operations before updating order
+          return stockPromise.then(() => {
+            return order.update(
+              {
+                customer_id: orderData.customer_id || null,
+                subtotal: subtotal.toFixed(2),
+                discount: discount,
+                discount_type: discountType,
+                total: total.toFixed(2),
+                status: newStatus,
+              },
+              { transaction },
+            );
+          });
         });
       });
     })

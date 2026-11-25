@@ -1,0 +1,141 @@
+
+<%- include('../partials/layout-start', {pageTitle: 'Low Stock', activePage: 'products'}) %>
+
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">INVENTORY ALERT</div>
+    <h1>Low Stock Products</h1>
+    <p>Products that have reached or fallen below their minimum stock level.</p>
+  </div>
+
+  <a class="btn btn-light" href="/products">
+    <i data-lucide="arrow-left"></i> Back to products
+  </a>
+</div>
+
+<%
+  const lowStockRows =
+    (typeof products !== 'undefined' && Array.isArray(products))
+      ? products
+      : [];
+%>
+
+<section class="panel table-panel">
+  <div class="toolbar">
+    <div>
+      <strong><%= lowStockRows.length %></strong>
+      <span class="muted-code">products need attention</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>PRODUCT</th>
+          <th>SKU</th>
+          <th>CATEGORY</th>
+          <th>PRICE</th>
+          <th>CURRENT STOCK</th>
+          <th>MINIMUM STOCK</th>
+          <th>STATUS</th>
+          <th></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% if (lowStockRows.length) { %>
+
+          <% lowStockRows.forEach((product) => { %>
+            <tr>
+              <td>
+                <div class="product-cell">
+                  <span class="product-thumb thumb-0">
+                    <% if (product.image) { %>
+                      <img
+                        src="<%= product.image %>"
+                        alt="<%= product.name %>"
+                        class="product-image"
+                      >
+                    <% } else { %>
+                      <i data-lucide="package"></i>
+                    <% } %>
+                  </span>
+
+                  <strong>
+                    <a href="/products/<%= product.id %>">
+                      <%= product.name %>
+                    </a>
+                  </strong>
+                </div>
+              </td>
+
+              <td>
+                <span class="muted-code"><%= product.sku || '—' %></span>
+              </td>
+
+              <td>
+                <%= product.category ? product.category.name : '—' %>
+              </td>
+
+              <td class="amount">
+                <%= product.selling_price %>
+              </td>
+
+              <td>
+                <strong><%= product.stock_quantity %></strong>
+              </td>
+
+              <td>
+                <%= product.low_stock_threshold %>
+              </td>
+
+              <td>
+                <span class="status">
+                  <%= Number(product.stock_quantity) === 0
+                    ? 'Out of stock'
+                    : 'Low stock'
+                  %>
+                </span>
+              </td>
+
+              <td>
+                <div class="table-actions">
+                  <a
+                    class="icon-button"
+                    href="/products/<%= product.id %>"
+                    title="View product"
+                  >
+                    <i data-lucide="eye"></i>
+                  </a>
+
+                  <a
+                    class="icon-button"
+                    href="/products/<%= product.id %>/edit"
+                    title="Edit product"
+                  >
+                    <i data-lucide="pencil"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+
+        <% } else { %>
+
+          <tr>
+            <td colspan="8">
+              <div class="table-empty">
+                <strong>All products are sufficiently stocked</strong>
+                <span>No products currently need stock replenishment.</span>
+              </div>
+            </td>
+          </tr>
+
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<%- include('../partials/layout-end') %>

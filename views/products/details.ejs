@@ -110,6 +110,82 @@
 
 </section>
 
+
+<!-- Stock Adjustment -->
+<section class="panel form-panel">
+
+  <div class="form-section-title">
+    <div>
+      <h2>Stock Adjustment</h2>
+      <p>Manually increase or decrease product stock</p>
+    </div>
+  </div>
+
+  <div class="field-row">
+
+    <!-- Add Stock -->
+    <div class="field">
+      <h3>Add Stock (IN)</h3>
+      <p>Increase the available stock quantity.</p>
+
+      <form
+        action="/products/<%= product.id %>/stock/add"
+        method="POST"
+      >
+        <div class="field">
+          <label for="add-quantity">Quantity to Add</label>
+          <input
+            type="number"
+            id="add-quantity"
+            name="quantity"
+            min="1"
+            step="1"
+            placeholder="Enter quantity"
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="plus-circle"></i>
+          Add Stock
+        </button>
+      </form>
+    </div>
+
+    <!-- Remove Stock -->
+    <div class="field">
+      <h3>Remove Stock (OUT)</h3>
+      <p>Decrease the available stock quantity.</p>
+
+      <form
+        action="/products/<%= product.id %>/stock/remove"
+        method="POST"
+      >
+        <div class="field">
+          <label for="remove-quantity">Quantity to Remove</label>
+          <input
+            type="number"
+            id="remove-quantity"
+            name="quantity"
+            min="1"
+            step="1"
+            max="<%= product.stock_quantity %>"
+            placeholder="Enter quantity"
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn btn-light">
+          <i data-lucide="minus-circle"></i>
+          Remove Stock
+        </button>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+
 <!-- Suppliers -->
 <section class="panel form-panel">
 
@@ -157,6 +233,78 @@
     <div class="table-empty">
       <strong>No suppliers found</strong>
       <span>No suppliers are associated with this product.</span>
+    </div>
+
+  <% } %>
+
+</section>
+
+
+<!-- Stock Movement History -->
+<section class="panel form-panel">
+
+  <div class="form-section-title">
+    <div>
+      <h2>Stock Movement History</h2>
+      <p>Track all stock changes for this product</p>
+    </div>
+  </div>
+
+  <% if (stockMovements && stockMovements.length > 0) { %>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>TYPE</th>
+            <th>QUANTITY</th>
+            <th>ORDER</th>
+            <th>DATE</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% stockMovements.forEach((movement) => { %>
+            <tr>
+              <td>
+                <strong><%= movement.movement_type %></strong>
+              </td>
+
+              <td>
+                <strong>
+                  <%= ['IN', 'RETURN'].includes(movement.movement_type)
+                    ? '+' + movement.quantity
+                    : ['OUT', 'SALE'].includes(movement.movement_type)
+                      ? '-' + movement.quantity
+                      : movement.quantity
+                  %>
+                </strong>
+              </td>
+
+              <td>
+                <% if (movement.order) { %>
+                  <a href="/orders/<%= movement.order.id %>">
+                    <%= movement.order.order_number %>
+                  </a>
+                <% } else { %>
+                  —
+                <% } %>
+              </td>
+
+              <td>
+                <%= new Date(movement.createdAt).toLocaleString('en-GB') %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+  <% } else { %>
+
+    <div class="table-empty">
+      <strong>No stock movements found</strong>
+      <span>Stock changes for this product will appear here.</span>
     </div>
 
   <% } %>
