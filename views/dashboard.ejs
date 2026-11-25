@@ -1,14 +1,354 @@
+
 <%- include('partials/layout-start', {pageTitle: 'Overview', activePage: 'dashboard'}) %>
-<div class="page-heading"><div><div class="eyebrow">WORKSPACE OVERVIEW</div><h1>Welcome to Stockwise <span class="wave">✦</span></h1><p>Here's an overview of your inventory and activity.</p></div><div class="heading-actions"><button class="btn btn-light" type="button"><i data-lucide="download"></i> Export report</button><a class="btn btn-primary" href="/products/new"><i data-lucide="plus"></i> Add product</a></div></div>
+
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">WORKSPACE OVERVIEW</div>
+    <h1>Welcome to Stockwise <span class="wave">✦</span></h1>
+    <p>Here's an overview of your inventory and activity.</p>
+  </div>
+
+  <div class="heading-actions">
+    <button class="btn btn-light" type="button">
+      <i data-lucide="download"></i> Export report
+    </button>
+    <a class="btn btn-primary" href="/products/new">
+      <i data-lucide="plus"></i> Add product
+    </a>
+  </div>
+</div>
+
 <section class="stats-grid">
-  <article class="stat-card"><div class="stat-top"><span>Total products</span><span class="stat-icon blue"><i data-lucide="package"></i></span></div><div class="stat-value">—</div><div class="stat-foot">Awaiting inventory data</div></article>
-  <article class="stat-card"><div class="stat-top"><span>Total inventory value</span><span class="stat-icon violet"><i data-lucide="wallet"></i></span></div><div class="stat-value">—</div><div class="stat-foot">Awaiting inventory data</div></article>
-  <article class="stat-card"><div class="stat-top"><span>Low stock items</span><span class="stat-icon orange"><i data-lucide="alert-triangle"></i></span></div><div class="stat-value">—</div><div class="stat-foot">Awaiting inventory data</div></article>
-  <article class="stat-card"><div class="stat-top"><span>Orders</span><span class="stat-icon green"><i data-lucide="shopping-cart"></i></span></div><div class="stat-value">—</div><div class="stat-foot">Awaiting order data</div></article>
+
+  <!-- Total Products -->
+  <article class="stat-card">
+    <div class="stat-top">
+      <span>Total products</span>
+      <span class="stat-icon blue">
+        <i data-lucide="package"></i>
+      </span>
+    </div>
+
+    <div class="stat-value">
+      <%= overviewStats.totalProducts %>
+    </div>
+
+    <div class="stat-foot">Products in your inventory</div>
+  </article>
+
+  <!-- Total Inventory Value -->
+  <article class="stat-card">
+    <div class="stat-top">
+      <span>Total inventory value</span>
+      <span class="stat-icon violet">
+        <i data-lucide="wallet"></i>
+      </span>
+    </div>
+
+    <div class="stat-value">
+      <%= Number(totalInventoryValue).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) %>
+    </div>
+
+    <div class="stat-foot">Based on average purchase prices</div>
+  </article>
+
+  <!-- Low Stock Items -->
+  <article class="stat-card">
+    <div class="stat-top">
+      <span>Low stock items</span>
+      <span class="stat-icon orange">
+        <i data-lucide="alert-triangle"></i>
+      </span>
+    </div>
+
+    <div class="stat-value">
+      <%= lowStockCount %>
+    </div>
+
+    <div class="stat-foot">Products at or below stock threshold</div>
+  </article>
+
+  <!-- Total Orders -->
+  <article class="stat-card">
+    <div class="stat-top">
+      <span>Orders</span>
+      <span class="stat-icon green">
+        <i data-lucide="shopping-cart"></i>
+      </span>
+    </div>
+
+    <div class="stat-value">
+      <%= overviewStats.totalOrders %>
+    </div>
+
+    <div class="stat-foot">Total recorded orders</div>
+
+    <div class="stat-foot">
+      Pending: <%= orderStats.pendingOrders %>
+      |
+      Completed: <%= orderStats.completedOrders %>
+      |
+      Cancelled: <%= orderStats.cancelledOrders %>
+    </div>
+  </article>
+
 </section>
+
 <section class="dashboard-grid">
-  <article class="panel sales-panel"><div class="panel-header"><div><h2>Sales overview</h2><p>Revenue performance will appear here.</p></div><span class="select-button">Sales summary</span></div><div class="empty-state compact"><span class="empty-icon"><i data-lucide="chart-no-axes-combined"></i></span><strong>No sales data yet</strong><p>Sales activity will be displayed after orders are recorded.</p></div></article>
-  <article class="panel stock-panel"><div class="panel-header"><div><h2>Stock by category</h2><p>Product distribution</p></div></div><div class="empty-state compact"><span class="empty-icon"><i data-lucide="chart-pie"></i></span><strong>No category data yet</strong><p>Category distribution will appear here.</p></div></article>
+
+
+<!-- Sales Overview / Chart -->
+<article class="panel sales-panel">
+  <div class="panel-header">
+    <div>
+      <h2>Sales overview</h2>
+      <p>Revenue performance over the last 7 days.</p>
+    </div>
+
+    <span class="select-button">Last 7 days</span>
+  </div>
+
+  <div class="stat-value">
+    <%= Number(salesStats.totalRevenue).toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }) %>
+  </div>
+
+  <div class="stat-foot">Total completed sales</div>
+
+  <div style="position: relative; width: 100%; height: 260px; margin-top: 20px;">
+    <canvas id="salesChart"></canvas>
+  </div>
+</article>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const salesData = <%- JSON.stringify(salesChart || []) %>;
+
+  const salesLabels = salesData.map(item => item.date);
+
+  const salesValues = salesData.map(item => Number(item.revenue));
+
+  const salesCanvas = document.getElementById("salesChart");
+
+  new Chart(salesCanvas, {
+    type: "line",
+
+    data: {
+      labels: salesLabels,
+
+      datasets: [{
+        label: "Revenue",
+        data: salesValues,
+        borderColor: "#6366f1",
+        backgroundColor: "rgba(99, 102, 241, 0.12)",
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: "#6366f1"
+      }]
+    },
+
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+
+      plugins: {
+        legend: {
+          display: false
+        },
+
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return "Revenue: " +
+                context.parsed.y.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                });
+            }
+          }
+        }
+      },
+
+      scales: {
+        x: {
+          grid: {
+            display: false
+          }
+        },
+
+        y: {
+          beginAtZero: true,
+
+          ticks: {
+            callback: function(value) {
+              return value.toLocaleString("en-US");
+            }
+          }
+        }
+      }
+    }
+  });
+</script>
+
+  
+
+  <!-- Stock by Category -->
+  <article class="panel stock-panel">
+    <div class="panel-header">
+      <div>
+        <h2>Stock by category</h2>
+        <p>Product distribution</p>
+      </div>
+    </div>
+
+    <div class="empty-state compact">
+      <span class="empty-icon">
+        <i data-lucide="chart-pie"></i>
+      </span>
+
+      <strong>No category data yet</strong>
+      <p>Category distribution will appear here.</p>
+    </div>
+  </article>
+
 </section>
-<section class="panel table-panel"><div class="panel-header"><div><h2>Recent orders</h2><p>Your latest customer transactions.</p></div><a class="text-link" href="/orders">View all orders <i data-lucide="arrow-up-right"></i></a></div><div class="empty-state"><span class="empty-icon"><i data-lucide="inbox"></i></span><strong>No orders yet</strong><p>Orders will appear here after you create them.</p><a href="/orders" class="btn btn-light">Go to orders</a></div></section>
+
+<!-- Recent Orders -->
+<section class="panel table-panel">
+  <div class="panel-header">
+    <div>
+      <h2>Recent orders</h2>
+      <p>Your latest customer transactions.</p>
+    </div>
+
+    <a class="text-link" href="/orders">
+      View all orders <i data-lucide="arrow-up-right"></i>
+    </a>
+  </div>
+
+  <% if (recentOrders.length > 0) { %>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Order Number</th>
+            <th>Customer</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% recentOrders.forEach((order) => { %>
+            <tr>
+              <td>
+                <strong><%= order.order_number %></strong>
+              </td>
+
+              <td>
+                <%= order.customer ? order.customer.name : 'Walk-in Customer' %>
+              </td>
+
+              <td>
+                <%= Number(order.total).toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                }) %>
+              </td>
+
+              <td>
+                <span class="status-badge <%= order.status %>">
+                  <%= order.status %>
+                </span>
+              </td>
+
+              <td>
+                <%= new Date(order.createdAt).toLocaleDateString('en-GB') %>
+              </td>
+
+              <td>
+                <a href="/orders/<%= order.id %>" class="text-link">
+                  View
+                </a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <span class="empty-icon">
+        <i data-lucide="inbox"></i>
+      </span>
+
+      <strong>No orders yet</strong>
+      <p>Orders will appear here after you create them.</p>
+
+      <a href="/orders" class="btn btn-light">Go to orders</a>
+    </div>
+  <% } %>
+</section>
+
+<!-- Top Selling Products -->
+<section class="panel table-panel">
+  <div class="panel-header">
+    <div>
+      <h2>Top selling products</h2>
+      <p>Best performing products based on completed orders.</p>
+    </div>
+
+    <a class="text-link" href="/products">
+      View all products <i data-lucide="arrow-up-right"></i>
+    </a>
+  </div>
+
+  <% if (topSellingProducts.length > 0) { %>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Units Sold</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% topSellingProducts.forEach((product) => { %>
+            <tr>
+              <td>
+                <strong><%= product.productName %></strong>
+              </td>
+
+              <td>
+                <%= product.totalSold %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <span class="empty-icon">
+        <i data-lucide="package"></i>
+      </span>
+
+      <strong>No selling data yet</strong>
+      <p>Products will appear here after completed orders.</p>
+    </div>
+  <% } %>
+</section>
+
 <%- include('partials/layout-end') %>

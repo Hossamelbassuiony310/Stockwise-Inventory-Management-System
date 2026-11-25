@@ -6,6 +6,7 @@ const productRoutes = require("./routes/productRoutes");
 const customerRoutes = require("./routes/customerRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const orderItemRoutes = require("./routes/orderItemRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/products", productRoutes);
 app.use("/customers", customerRoutes);
 app.use("/orders", orderRoutes);
 app.use("/orders", orderItemRoutes);
+app.use("/", dashboardRoutes);
 
 // Temporary Test Route
 app.get("/", (req, res) => {
